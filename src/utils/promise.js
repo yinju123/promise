@@ -50,19 +50,27 @@ export class Promise {
   }
 
   then(onFulfilled, onRejected) {
-    return new Promise((resolve, reject) => {
+    let promise2 = new Promise((resolve, reject) => {
       let { status, data } = this
       const pending = 'pending'
       const fulfilled = 'fulfilled'
       const rejected = 'rejected'
       const _resolve = (val) => {
         try {
-          let res = onFulfilled(val)
-          if (res instanceof Promise) {
-            res.then(resolve, reject)
+          if (typeof onFulfilled === 'function') {
+            let x = onFulfilled(val)
+            if (x === p2) {
+              reject(new Error("不能返回promise本身"))
+            } else if (x instanceof Object || typeof x === 'function') {
+              let then = x.then
+              then.call(x, resolvePromise, rejectPromise)
+            } else {
+              resolve(x)
+            }
           } else {
-            resolve(res)
+            resolve(onFulfilled)
           }
+
         } catch (err) {
           reject(err)
         }
@@ -93,6 +101,8 @@ export class Promise {
           break
       }
     })
+
+    return promise2
   }
 }
 
