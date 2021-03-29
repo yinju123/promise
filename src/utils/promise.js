@@ -14,7 +14,7 @@
 */
 
 
-export class Promise {
+class Promise {
   constructor(handler) {
 
     this.onFulfillcbs = []
@@ -59,14 +59,7 @@ export class Promise {
         try {
           if (typeof onFulfilled === 'function') {
             let x = onFulfilled(val)
-            if (x === p2) {
-              reject(new Error("不能返回promise本身"))
-            } else if (x instanceof Object || typeof x === 'function') {
-              let then = x.then
-              then.call(x, resolvePromise, rejectPromise)
-            } else {
-              resolve(x)
-            }
+            resolvePromise(promise2, x, resolve, reject)
           } else {
             resolve(onFulfilled)
           }
@@ -79,11 +72,7 @@ export class Promise {
       const _reject = (val) => {
         try {
           let res = onRejected(val)
-          if (res instanceof Promise) {
-            res.then(resolve)
-          } else {
-            resolve(res)
-          }
+          resolvePromise(res)
         } catch (err) {
           reject(err)
         }
@@ -104,5 +93,48 @@ export class Promise {
 
     return promise2
   }
+
+  resolve(val){
+    return new Promise(resolve => {
+      resolve(val)
+    })
+  }
 }
+
+
+// 我感觉resolvePromise 不可能会被调用多次。但是规范里面要求不能被调用多次
+function resolvePromise(promise, x, resolve, reject){
+  if (x === promise) {
+    reject(new Error("不能返回promise本身"))
+  } else if (x instanceof Object || typeof x === 'function') {
+    let then = x.then
+    if(typeof then === 'function'){
+      then.call(x, y => {
+        resolvePromise(promise, y, resolve, reject)
+      }, r=> {
+        reject(r)
+      })
+    } else {
+      resolve(x)
+    }
+  } else {
+    resolve(x)
+  }
+}
+
+
+//  配合使用 promises-aplus-tests 测试
+Promise.deferred = Promise.defer = function() {
+  var dfd = {}
+  dfd.promise = new Promise(function(resolve, reject) {
+    dfd.resolve = resolve
+    dfd.reject = reject
+  })
+  return dfd
+}
+
+module.exports = Promise;
+
+
+
 

@@ -3,7 +3,8 @@
     "localDev": "cross-env NODE_ENV=development webpack-dev-server --config config/webpack.dev.js",
     "localDevH5": "cross-env NODE_ENV=development h5=true webpack-dev-server --config config/webpack.dev.js",
     "localProd": "cross-env NODE_ENV=production webpack-dev-server --config config/webpack.dev.js",
-    "build": "webpack --config config/webpack.pro.js"
+    "build": "webpack --config config/webpack.pro.js",
+    "test":"promises-aplus-tests src/utils/promise"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
@@ -20,6 +21,7 @@
     "path": "^0.12.7",
     "postcss-loader": "^4.1.0",
     "postcss-px2rem-exclude": "^0.0.6",
+    "promises-aplus-tests": "^2.1.2",
     "sass-loader": "^10.1.0",
     "url-loader": "^4.1.1",
     "vue-loader": "^15.9.6",

@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { Promise } from "@/utils/promise";
+import Promise from "@/utils/promise";
 export default {
   props: {},
   data() {
@@ -19,23 +19,26 @@ export default {
   watch: {},
   computed: {},
   created() {
-    new Promise((resolve, reject) => {
+    let p2 = new Promise((resolve, reject) => {
       resolve(1);
     })
       .then(
         (res) => {
-          throw new Error("错误代码");
-          // return new Promise((resolve, reject) => {
-          //   setTimeout(() => {
-          //     reject(300);
-          //   }, 1000);
-          // });
+          return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              resolve(300);
+            }, 1000);
+          }).then(res => {
+            return 4
+          })
         },
         (err) => {
           console.log("err11", err);
         }
       )
-      .then(
+
+      setTimeout(() => {
+        p2.then(
         (res) => {
           console.log("res2", res);
         },
@@ -43,6 +46,7 @@ export default {
           console.log("err2", err);
         }
       );
+      }, 3000)
   },
   mounted() {},
   methods: {},
