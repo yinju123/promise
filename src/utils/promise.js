@@ -16,15 +16,15 @@
 
 class Promise {
   constructor(handler) {
-
     this.onFulfillcbs = []
     this.onrejectedcbs = []
     this.data = ""
     this.status = 'pending'
 
     const resolve = val => {
-      if (this.status !== 'pending') return
       const run = () => {
+        // 不能放run的外面，2.1 状态不可修改，如果放到外面，setTimeout 是宏任务，同时执行resolve，reject，status 都没有改变，所以里面的内容都会执行
+        if (this.status !== 'pending') return
         this.data = val
         this.status = 'fulfilled'
         this.onFulfillcbs.forEach(cb => cb(val))
@@ -33,8 +33,8 @@ class Promise {
     }
 
     const reject = err => {
-      if (this.status !== 'pending') return
       const run = () => {
+        if (this.status !== 'pending') return
         this.data = err
         this.status = 'rejected'
         this.onrejectedcbs.forEach(cb => cb(err))
@@ -56,26 +56,35 @@ class Promise {
       const fulfilled = 'fulfilled'
       const rejected = 'rejected'
       const _resolve = (val) => {
-        try {
-          if (typeof onFulfilled === 'function') {
-            let x = onFulfilled(val)
-            resolvePromise(promise2, x, resolve, reject)
-          } else {
-            resolve(onFulfilled)
+        const run = () => {
+          try {
+            if (typeof onFulfilled === 'function') {
+              let x = onFulfilled(val)
+              resolvePromise(promise2, x, resolve, reject)
+            } else {
+              resolve(onFulfilled)
+            }
+  
+          } catch (err) {
+            reject(err)
           }
-
-        } catch (err) {
-          reject(err)
         }
+        // 2.2.4
+        run()
+        // setTimeout(run, 0)
       }
 
       const _reject = (val) => {
-        try {
-          let res = onRejected(val)
-          resolvePromise(res)
-        } catch (err) {
-          reject(err)
+        const run = () => {
+          try {
+            let res = onRejected(val)
+            resolvePromise(res)
+          } catch (err) {
+            reject(err)
+          }
         }
+        run()
+        setTimeout(run, 0)
       }
       switch (status) {
         case pending:
