@@ -50,54 +50,44 @@ class Promise {
   }
 
   then(onFulfilled, onRejected) {
+    typeof onFulfilled !== 'function' && (onFulfilled = v => v)
+    typeof onRejected !== 'function' && (onRejected = v => v)
     let promise2 = new Promise((resolve, reject) => {
-      let { status, data } = this
-      const pending = 'pending'
-      const fulfilled = 'fulfilled'
-      const rejected = 'rejected'
-      const _resolve = (val) => {
-        const run = () => {
+      setTimeout(() => {
+        let { status, data } = this
+        const pending = 'pending'
+        const fulfilled = 'fulfilled'
+        const rejected = 'rejected'
+        const _resolve = (val) => {
           try {
-            if (typeof onFulfilled === 'function') {
-              let x = onFulfilled(val)
-              resolvePromise(promise2, x, resolve, reject)
-            } else {
-              resolve(onFulfilled)
-            }
-  
+            let x = onFulfilled(val)
+            resolvePromise(promise2, x, resolve, reject)
           } catch (err) {
             reject(err)
           }
         }
-        // 2.2.4
-        run()
-        // setTimeout(run, 0)
-      }
 
-      const _reject = (val) => {
-        const run = () => {
+        const _reject = (val) => {
           try {
-            let res = onRejected(val)
-            resolvePromise(res)
+            let x = onFulfilled(val)
+            resolvePromise(promise2, x, resolve, reject)
           } catch (err) {
             reject(err)
           }
         }
-        run()
-        setTimeout(run, 0)
-      }
-      switch (status) {
-        case pending:
-          this.onFulfillcbs.push(_resolve)
-          this.onrejectedcbs.push(_reject)
-          break
-        case fulfilled:
-          _resolve(data)
-          break
-        case rejected:
-          _reject(data)
-          break
-      }
+        switch (status) {           
+          case pending:
+            this.onFulfillcbs.push(_resolve)
+            this.onrejectedcbs.push(_reject)
+            break
+          case fulfilled:
+            _resolve(data)
+            break
+          case rejected:
+            _reject(data)
+            break
+        }
+      })
     })
 
     return promise2
