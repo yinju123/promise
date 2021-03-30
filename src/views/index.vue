@@ -19,14 +19,45 @@ export default {
   watch: {},
   computed: {},
   created() {
+    function a() {
+      const b = () => {
+        throw new Error(1);
+      };
+      b();
+    }
+    try {
+      a();
+    } catch (e) {
+      console.log("eee", e);
+    }
+
+    const createObj = function () {
+      return Object.create(null, {
+        then: {
+          get() {
+            return (onFulfilled) => {
+              onFulfilled();
+            };
+          },
+        },
+      });
+    };
     let p2 = new Promise((resolve, reject) => {
-      reject(2);
       resolve(33);
-    })
+    });
 
-    let p3 = p2.then()
+    p2.then(createObj, (err) => {
+      console.log("err1", err);
+    }).then(
+      (res) => {
+        console.log("res2", res);
+      },
+      (err) => {
+        console.log("err2", err);
+      }
+    );
 
-    console.log('p2', p2)
+    // console.log("obj", obj);
   },
   mounted() {},
   methods: {},

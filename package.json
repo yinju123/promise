@@ -4,8 +4,8 @@
     "localDevH5": "cross-env NODE_ENV=development h5=true webpack-dev-server --config config/webpack.dev.js",
     "localProd": "cross-env NODE_ENV=production webpack-dev-server --config config/webpack.dev.js",
     "build": "webpack --config config/webpack.pro.js",
-    "test":"promises-aplus-tests src/utils/promise",
-    "test2":"promises-aplus-tests src/utils/promise1"
+    "test": "promises-aplus-tests src/utils/promise",
+    "test2": "promises-aplus-tests src/utils/promise1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",

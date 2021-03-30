@@ -16,6 +16,7 @@
 
 class Promise {
   constructor(handler) {
+    this.a = 1
     this.onFulfillcbs = []
     this.onrejectedcbs = []
     this.data = ""
@@ -50,8 +51,10 @@ class Promise {
   }
 
   then(onFulfilled, onRejected) {
+    // 2.3.1 onFulfilled, onRejected 不存在。将执行值得穿透。延续到下一个状态中
     typeof onFulfilled !== 'function' && (onFulfilled = v => v)
-    typeof onRejected !== 'function' && (onRejected = v => v)
+    typeof onRejected !== 'function' && (onRejected = v => { throw v })
+    // 2.2.4 onFulfilled, onRejected 异步执行
     let promise2 = new Promise((resolve, reject) => {
       setTimeout(() => {
         let { status, data } = this
@@ -69,13 +72,13 @@ class Promise {
 
         const _reject = (val) => {
           try {
-            let x = onFulfilled(val)
+            let x = onRejected(val)
             resolvePromise(promise2, x, resolve, reject)
           } catch (err) {
             reject(err)
           }
         }
-        switch (status) {           
+        switch (status) {
           case pending:
             this.onFulfillcbs.push(_resolve)
             this.onrejectedcbs.push(_reject)
@@ -93,7 +96,7 @@ class Promise {
     return promise2
   }
 
-  resolve(val){
+  resolve(val) {
     return new Promise(resolve => {
       resolve(val)
     })
@@ -102,15 +105,17 @@ class Promise {
 
 
 // 我感觉resolvePromise 不可能会被调用多次。但是规范里面要求不能被调用多次
-function resolvePromise(promise, x, resolve, reject){
+function resolvePromise(promise, x, resolve, reject) {
   if (x === promise) {
-    reject(new Error("不能返回promise本身"))
-  } else if (x instanceof Object || typeof x === 'function') {
+    // 2.3.3 注意是TypeError 不是Error
+    reject(new TypeError("不能返回promise本身"))
+    // 不能使用instanceof 判断 因为 Object.create(null)
+  } else if (Object.prototype.toString.call(x).slice(-7, -1) === 'Object' || typeof x === 'function') {
     let then = x.then
-    if(typeof then === 'function'){
+    if (typeof then === 'function') {
       then.call(x, y => {
         resolvePromise(promise, y, resolve, reject)
-      }, r=> {
+      }, r => {
         reject(r)
       })
     } else {
@@ -123,9 +128,9 @@ function resolvePromise(promise, x, resolve, reject){
 
 
 //  配合使用 promises-aplus-tests 测试
-Promise.deferred = Promise.defer = function() {
+Promise.deferred = Promise.defer = function () {
   var dfd = {}
-  dfd.promise = new Promise(function(resolve, reject) {
+  dfd.promise = new Promise(function (resolve, reject) {
     dfd.resolve = resolve
     dfd.reject = reject
   })
@@ -134,6 +139,12 @@ Promise.deferred = Promise.defer = function() {
 
 module.exports = Promise;
 
+
+/*
+ 2.3.1
+instanceof 不一定能判断对象 不能判断 Object.create(null) 创建的对象
+
+*/
 
 
 
