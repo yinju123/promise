@@ -111,15 +111,21 @@ function resolvePromise(promise, x, resolve, reject) {
     reject(new TypeError("不能返回promise本身"))
     // 不能使用instanceof 判断 因为 Object.create(null)
   } else if (Object.prototype.toString.call(x).slice(-7, -1) === 'Object' || typeof x === 'function') {
-    let then = x.then
-    if (typeof then === 'function') {
-      then.call(x, y => {
-        resolvePromise(promise, y, resolve, reject)
-      }, r => {
-        reject(r)
-      })
-    } else {
-      resolve(x)
+    // 虽然外面有try-catch 但是某个循环里面可能有setTimeout，try catch只能捕获到同步的报错。如果先resolve或者reject 在throw 那个这个throw 应该被忽略
+    // 2.3.3.3  a thenable that fulfills but then throws
+    try{
+      let then = x.then
+      if (typeof then === 'function') {
+        then.call(x, y => {
+          resolvePromise(promise, y, resolve, reject)
+        }, r => {
+          reject(r)
+        })
+      } else {
+        resolve(x)
+      }
+    }catch(err){
+      reject(err)
     }
   } else {
     resolve(x)

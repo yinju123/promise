@@ -3,14 +3,15 @@
     <!-- <div class="center">
       <div class="center_inner">center_inner</div>
     </div> -->
-    <div class="left">left</div>
-    <div class="center">center</div>
-    <div class="right">right</div>
+    <!-- <div class="left" >left</div>
+    <div class="center" >center</div>
+    <div class="right" >right</div> -->
   </div>
 </template>
 
 <script>
 import Promise from "@/utils/promise";
+const arr = []
 export default {
   props: {},
   data() {
@@ -19,48 +20,34 @@ export default {
   watch: {},
   computed: {},
   created() {
-    function a() {
-      const b = () => {
-        throw new Error(1);
-      };
-      b();
-    }
-    try {
-      a();
-    } catch (e) {
-      console.log("eee", e);
-    }
+    
+    let p = new Promise((resolve ,reject) => {
+      resolve(1)
+    })
 
-    const createObj = function () {
-      return Object.create(null, {
-        then: {
-          get() {
-            return (onFulfilled) => {
-              onFulfilled();
-            };
-          },
-        },
-      });
-    };
-    let p2 = new Promise((resolve, reject) => {
-      resolve(33);
-    });
-
-    p2.then(createObj, (err) => {
-      console.log("err1", err);
-    }).then(
-      (res) => {
-        console.log("res2", res);
-      },
-      (err) => {
-        console.log("err2", err);
+    p.then(res => {
+      let obj = {
+        then:(onFulfilled) => {
+          setTimeout(() => {
+            let y = {
+              then: function (onFulfilled) {
+                onFulfilled({a:1});
+                throw {a:2};
+              }
+            }
+            onFulfilled(y)
+          })
+        }
       }
-    );
-
-    // console.log("obj", obj);
+      return obj
+    }).then(res => {
+      console.log('res2', res)
+    })
   },
   mounted() {},
-  methods: {},
+  methods: {
+    
+  },
   components: {},
 };
 </script>
