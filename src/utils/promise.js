@@ -111,20 +111,30 @@ function resolvePromise(promise, x, resolve, reject) {
     reject(new TypeError("不能返回promise本身"))
     // 不能使用instanceof 判断 因为 Object.create(null)
   } else if (Object.prototype.toString.call(x).slice(-7, -1) === 'Object' || typeof x === 'function') {
+    let called = false
     // 虽然外面有try-catch 但是某个循环里面可能有setTimeout，try catch只能捕获到同步的报错。如果先resolve或者reject 在throw 那个这个throw 应该被忽略
-    // 2.3.3.3  a thenable that fulfills but then throws
-    try{
+    // 2.3.3.4  a thenable that fulfills but then throws
+    try {
       let then = x.then
       if (typeof then === 'function') {
         then.call(x, y => {
+          // 2.3.3.3 then可能是被人写的代码，可能有错误，y相关函数相当于onFulfilled，onFulfilled可能会被调用多次。先执行的传入的是一个thenable，它的then方法是一个异步执行onFulfilled。后执行的是传入一个普通只。按理后执行的忽略，但是我们不做处理，那么得到的结果是后执行的。按理查看examle2.3.3.3
+          if (called) return
+          called = true
           resolvePromise(promise, y, resolve, reject)
         }, r => {
+          // 也可能是先调用onFulfilled，在调用onRejected,但是onFulfilled是个异步完成，为了保证进入onFulfilled状态， 这里要判断called
+          if (called) return
+          called = true
           reject(r)
+          // resolvePromise(promise, r, resolve, reject)
         })
       } else {
         resolve(x)
       }
-    }catch(err){
+    } catch (err) {
+      // 3.3.3.4 如果resolvePromise或rejectPromise已经被调用，忽略它
+      if (called) return
       reject(err)
     }
   } else {
@@ -151,6 +161,10 @@ module.exports = Promise;
 instanceof 不一定能判断对象 不能判断 Object.create(null) 创建的对象
 
 */
+
+
+
+
 
 
 
