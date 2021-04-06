@@ -30,31 +30,31 @@ function testPromiseResolution(xFactory, test) {
 
 describe("2.3.2: If `x` is a promise, adopt its state", function () {
     describe("2.3.2.1: If `x` is pending, `promise` must remain pending until `x` is fulfilled or rejected.",
-             function () {
-        function xFactory() {
-            return deferred().promise;
-        }
+        function () {
+            function xFactory() {
+                return deferred().promise;
+            }
 
-        testPromiseResolution(xFactory, function (promise, done) {
-            var wasFulfilled = false;
-            var wasRejected = false;
+            testPromiseResolution(xFactory, function (promise, done) {
+                var wasFulfilled = false;
+                var wasRejected = false;
 
-            promise.then(
-                function onPromiseFulfilled() {
-                    wasFulfilled = true;
-                },
-                function onPromiseRejected() {
-                    wasRejected = true;
-                }
-            );
+                promise.then(
+                    function onPromiseFulfilled() {
+                        wasFulfilled = true;
+                    },
+                    function onPromiseRejected() {
+                        wasRejected = true;
+                    }
+                );
 
-            setTimeout(function () {
-                assert.strictEqual(wasFulfilled, false);
-                assert.strictEqual(wasRejected, false);
-                done();
-            }, 100);
+                setTimeout(function () {
+                    assert.strictEqual(wasFulfilled, false);
+                    assert.strictEqual(wasRejected, false);
+                    done();
+                }, 100);
+            });
         });
-    });
 
     describe("2.3.2.2: If/when `x` is fulfilled, fulfill `promise` with the same value.", function () {
         describe("`x` is already-fulfilled", function () {

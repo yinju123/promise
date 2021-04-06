@@ -11,7 +11,6 @@
 
 <script>
 import Promise from "@/utils/promise";
-const arr = [];
 export default {
   props: {},
   data() {
@@ -20,43 +19,36 @@ export default {
   watch: {},
   computed: {},
   created() {
-    var other = { other: "other" };
-    let yf1 = function (value) {
-      return {
-        then: function (onFulfilled) {
-          onFulfilled(value);
-          throw other;
-        },
-      };
-    };
-
-    let yf2 = function (value) {
-      return {
-        then: function (onFulfilled) {
-          setTimeout(function () {
-            onFulfilled(value);
-          }, 0);
-        },
-      };
-    };
-
+    try {
+      throw 1;
+    } catch (err) {
+      // a + 1;
+      console.log("err1", err);
+    }
+    let x = {};
+    Object.defineProperty(x, "then", {
+      get() {
+        throw "1";
+      },
+    });
     let p = new Promise((resolve, reject) => {
-      resolve(1);
+      // reject(1);
+      resolve(3);
     });
 
-    p.then((res) => {
-      let obj = {
-        then: (onFulfilled) => {
-          onFulfilled(yf1(yf2({ a: 4 })));
-        },
-      };
-      return obj;
-    }).then(
+    p.then(
       (res) => {
-        console.log("res2", res);
+        return x;
       },
       (err) => {
-        console.log("err2", err);
+        console.log("err1", err);
+      }
+    ).then(
+      (res) => {
+        console.log(111, res);
+      },
+      (err) => {
+        console.log(222, err);
       }
     );
   },
